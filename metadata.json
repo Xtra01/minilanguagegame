@@ -1,0 +1,6 @@
+{
+  "name": "MiniLingo - English for Kids",
+  "description": "An AI-powered English vocabulary learning tool for children. Teachers input words, and the app generates interactive games in a full English immersion environment.",
+  "version": "1.0.0",
+  "requestFramePermissions": []
+}
