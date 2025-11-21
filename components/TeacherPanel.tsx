@@ -42,23 +42,28 @@ export const TeacherPanel: React.FC<TeacherPanelProps> = ({ onLessonCreated }) =
       
       setStatus(LoadingState.GENERATING_AUDIO);
       
-      if (isOnline) {
-        setProgress(`Preparing High-Quality Audio... (0/${items.length})`);
-        // 2. Generate Audio for each word (Online only)
-        const itemsWithAudio: VocabularyItem[] = [];
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            setProgress(`Preparing Audio... (${i + 1}/${items.length}) - ${item.english}`);
-            const audio = await generateWordAudio(item.english);
-            itemsWithAudio.push({ ...item, audioBase64: audio });
-        }
+      if (isOnline && process.env.API_KEY) {
+        setProgress(`Generating Audio... (Please wait)`);
+        
+        // 2. Generate Audio in Parallel (Much Faster)
+        const itemPromises = items.map(async (item) => {
+            try {
+                const audio = await generateWordAudio(item.english);
+                return { ...item, audioBase64: audio };
+            } catch (e) {
+                console.warn(`Failed to gen audio for ${item.english}`, e);
+                return item; // Fallback to no audio (native TTS will handle it)
+            }
+        });
+
+        const itemsWithAudio = await Promise.all(itemPromises);
         onLessonCreated(itemsWithAudio);
       } else {
         // Offline: Skip audio generation, we will use TTS on the fly
         setProgress("Finalizing Offline Lesson...");
         setTimeout(() => {
             onLessonCreated(items); // Pass items without base64 audio
-        }, 1000);
+        }, 500);
       }
 
       setStatus(LoadingState.READY);

@@ -2,8 +2,6 @@ import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { VocabularyItem } from "../types";
 
 // Initialize Gemini
-// We check for the key to support local development and build environments
-// The API key is obtained exclusively from process.env.API_KEY as per guidelines.
 const apiKey = process.env.API_KEY;
 
 if (!apiKey) {
@@ -12,40 +10,69 @@ if (!apiKey) {
 
 const ai = new GoogleGenAI({ apiKey: apiKey || "" });
 
-// --- OFFLINE DATABASE (Fallback when no internet) ---
+// --- OFFLINE DATABASE (Expanded for better fallback) ---
 const OFFLINE_DICTIONARY: Record<string, Partial<VocabularyItem>> = {
+  // Fruits & Food
   "apple": { emoji: "🍎", definition: "A red, crunchy fruit.", simpleSentence: "I like to eat apples.", isPlural: false },
   "banana": { emoji: "🍌", definition: "A long yellow fruit.", simpleSentence: "Monkeys love bananas.", isPlural: false },
+  "orange": { emoji: "🍊", definition: "A round orange fruit.", simpleSentence: "Oranges are juicy.", isPlural: false },
+  "grape": { emoji: "🍇", definition: "Small purple or green fruit.", simpleSentence: "Grapes grow in bunches.", isPlural: false },
+  "strawberry": { emoji: "🍓", definition: "A sweet red berry.", simpleSentence: "Strawberries have seeds.", isPlural: false },
+  "watermelon": { emoji: "🍉", definition: "A big green fruit with red inside.", simpleSentence: "Watermelon is sweet.", isPlural: false },
+  "pizza": { emoji: "🍕", definition: "Cheesy food triangle.", simpleSentence: "I love pizza.", isPlural: false },
+  "ice cream": { emoji: "🍦", definition: "A cold, sweet treat.", simpleSentence: "I love chocolate ice cream.", isPlural: false },
+  "cake": { emoji: "🍰", definition: "Sweet food for birthdays.", simpleSentence: "Blow out the candles.", isPlural: false },
+  "milk": { emoji: "🥛", definition: "White drink from cows.", simpleSentence: "Drink your milk.", isPlural: false },
+  "water": { emoji: "💧", definition: "Clear liquid we drink.", simpleSentence: "Drink water everyday.", isPlural: false },
+  "cookie": { emoji: "🍪", definition: "A sweet baked treat.", simpleSentence: "Cookies are yummy.", isPlural: false },
+  
+  // Animals
   "cat": { emoji: "🐱", definition: "A small fluffy pet.", simpleSentence: "The cat says meow.", isPlural: false },
   "dog": { emoji: "🐶", definition: "A loyal pet friend.", simpleSentence: "The dog runs fast.", isPlural: false },
   "elephant": { emoji: "🐘", definition: "A very big animal with a trunk.", simpleSentence: "The elephant is big.", isPlural: false },
   "fish": { emoji: "🐟", definition: "An animal that swims in water.", simpleSentence: "Fish live in the sea.", isPlural: false },
-  "girl": { emoji: "👧", definition: "A female child.", simpleSentence: "The girl is happy.", isPlural: false },
-  "boy": { emoji: "👦", definition: "A male child.", simpleSentence: "The boy plays ball.", isPlural: false },
-  "house": { emoji: "🏠", definition: "A place where people live.", simpleSentence: "My house is warm.", isPlural: false },
-  "ice cream": { emoji: "🍦", definition: "A cold, sweet treat.", simpleSentence: "I love chocolate ice cream.", isPlural: false },
-  "jump": { emoji: "🦘", definition: "To push yourself into the air.", simpleSentence: "Rabbits jump high.", isPlural: false },
-  "kite": { emoji: "🪁", definition: "A toy that flies in the wind.", simpleSentence: "Fly the kite in the sky.", isPlural: false },
   "lion": { emoji: "🦁", definition: "The king of the jungle.", simpleSentence: "The lion roars loud.", isPlural: false },
   "monkey": { emoji: "🐵", definition: "A funny animal that climbs trees.", simpleSentence: "The monkey eats a banana.", isPlural: false },
-  "nest": { emoji: "🪹", definition: "A home for birds.", simpleSentence: "Eggs are in the nest.", isPlural: false },
-  "orange": { emoji: "🍊", definition: "A round orange fruit.", simpleSentence: "Oranges are juicy.", isPlural: false },
-  "pencil": { emoji: "✏️", definition: "A tool for writing.", simpleSentence: "Write with your pencil.", isPlural: false },
-  "queen": { emoji: "👑", definition: "A woman who rules a kingdom.", simpleSentence: "The queen wears a crown.", isPlural: false },
-  "red": { emoji: "🔴", definition: "The color of strawberries.", simpleSentence: "The car is red.", isPlural: false },
-  "sun": { emoji: "☀️", definition: "The hot star in the sky.", simpleSentence: "The sun is hot.", isPlural: false },
-  "tree": { emoji: "🌳", definition: "A tall plant with leaves.", simpleSentence: "Birds sit in the tree.", isPlural: false },
-  "umbrella": { emoji: "☔", definition: "Keeps you dry in rain.", simpleSentence: "Open the umbrella.", isPlural: false },
-  "van": { emoji: "🚐", definition: "A big car for many people.", simpleSentence: "We go in the van.", isPlural: false },
-  "water": { emoji: "💧", definition: "Clear liquid we drink.", simpleSentence: "Drink water everyday.", isPlural: false },
-  "xylophone": { emoji: "🎹", definition: "A musical instrument.", simpleSentence: "Play the xylophone.", isPlural: false },
-  "yellow": { emoji: "🟡", definition: "The color of lemons.", simpleSentence: "The sun is yellow.", isPlural: false },
+  "bird": { emoji: "🐦", definition: "An animal that flies.", simpleSentence: "The bird sings.", isPlural: false },
+  "rabbit": { emoji: "🐰", definition: "A hopper with long ears.", simpleSentence: "Rabbits jump high.", isPlural: false },
+  "tiger": { emoji: "🐯", definition: "A big orange cat with stripes.", simpleSentence: "Tigers are strong.", isPlural: false },
+  "bear": { emoji: "🐻", definition: "A big fuzzy animal.", simpleSentence: "Bears sleep in winter.", isPlural: false },
   "zebra": { emoji: "🦓", definition: "A striped horse-like animal.", simpleSentence: "Zebras are black and white.", isPlural: false },
+  "giraffe": { emoji: "🦒", definition: "Animal with a long neck.", simpleSentence: "Giraffes eat tall leaves.", isPlural: false },
+  
+  // Nature & Objects
+  "sun": { emoji: "☀️", definition: "The hot star in the sky.", simpleSentence: "The sun is hot.", isPlural: false },
+  "moon": { emoji: "🌙", definition: "We see it at night.", simpleSentence: "The moon is white.", isPlural: false },
+  "star": { emoji: "⭐", definition: "Twinkle in the night sky.", simpleSentence: "Look at the stars.", isPlural: false },
+  "tree": { emoji: "🌳", definition: "A tall plant with leaves.", simpleSentence: "Birds sit in the tree.", isPlural: false },
+  "flower": { emoji: "🌸", definition: "A pretty plant.", simpleSentence: "Flowers smell good.", isPlural: false },
+  "house": { emoji: "🏠", definition: "A place where people live.", simpleSentence: "My house is warm.", isPlural: false },
+  "car": { emoji: "🚗", definition: "A machine for driving.", simpleSentence: "The car goes beep.", isPlural: false },
+  "ball": { emoji: "⚽", definition: "Round toy for kicking.", simpleSentence: "Kick the ball.", isPlural: false },
+  "book": { emoji: "📖", definition: "Pages with stories.", simpleSentence: "Read the book.", isPlural: false },
+  "pencil": { emoji: "✏️", definition: "A tool for writing.", simpleSentence: "Write with your pencil.", isPlural: false },
+  
+  // Colors
+  "red": { emoji: "🔴", definition: "The color of strawberries.", simpleSentence: "The car is red.", isPlural: false },
+  "blue": { emoji: "🔵", definition: "The color of the sky.", simpleSentence: "The water is blue.", isPlural: false },
+  "green": { emoji: "🟢", definition: "The color of grass.", simpleSentence: "The leaf is green.", isPlural: false },
+  "yellow": { emoji: "🟡", definition: "The color of lemons.", simpleSentence: "The sun is yellow.", isPlural: false },
+  "orange color": { emoji: "🟠", definition: "The color of an orange.", simpleSentence: "Pumpkins are orange.", isPlural: false },
+  "purple": { emoji: "🟣", definition: "The color of grapes.", simpleSentence: "I like purple.", isPlural: false },
+  "black": { emoji: "⚫", definition: "The color of night.", simpleSentence: "The cat is black.", isPlural: false },
+  "white": { emoji: "⚪", definition: "The color of snow.", simpleSentence: "Snow is white.", isPlural: false },
+
+  // Numbers
+  "one": { emoji: "1️⃣", definition: "The number 1.", simpleSentence: "One finger.", isPlural: false },
+  "two": { emoji: "2️⃣", definition: "The number 2.", simpleSentence: "Two eyes.", isPlural: true },
+  "three": { emoji: "3️⃣", definition: "The number 3.", simpleSentence: "Three wishes.", isPlural: true },
+  
   // Plurals
   "apples": { emoji: "🍎", definition: "More than one apple.", simpleSentence: "I have three apples.", isPlural: true },
   "cats": { emoji: "🐱", definition: "More than one cat.", simpleSentence: "The cats are playing.", isPlural: true },
   "dogs": { emoji: "🐶", definition: "More than one dog.", simpleSentence: "The dogs are barking.", isPlural: true },
   "cars": { emoji: "🚗", definition: "More than one car.", simpleSentence: "The cars are fast.", isPlural: true },
+  "bananas": { emoji: "🍌", definition: "Many yellow fruits.", simpleSentence: "Bananas are good.", isPlural: true },
 };
 
 // --- AUDIO HANDLING ---
@@ -88,25 +115,18 @@ const pcmToAudioBuffer = (
   return buffer;
 };
 
-/**
- * Checks if internet is available
- */
 const isOnline = () => navigator.onLine;
 
 /**
  * Generates a structured lesson plan.
- * Strategies:
- * 1. Try Gemini AI (Best Quality)
- * 2. If Offline/Error, use Local Dictionary (Instant, robust)
- * 3. If Unknown Word Offline, use Generic Fallback
  */
 export const generateLessonContent = async (wordListInput: string): Promise<VocabularyItem[]> => {
   // Clean input
   const words = wordListInput.split(/[, \n]+/).map(w => w.trim()).filter(w => w.length > 0);
 
-  // Strategy: Check connectivity
-  if (!isOnline()) {
-    console.log("Offline Mode Detected: Using Local Dictionary");
+  // If offline or no API key, immediately fallback
+  if (!isOnline() || !apiKey) {
+    console.log("Offline/No-Key Mode Detected: Using Local Dictionary");
     return generateOfflineContent(words);
   }
 
@@ -119,7 +139,6 @@ export const generateLessonContent = async (wordListInput: string): Promise<Voca
       
       CRITICAL RULE FOR PLURALS:
       If the word is plural (e.g., "Apples", "Cars"), set 'isPlural' to true.
-      If it is plural, the definition MUST say "More than one..." or "Many...".
       
       Rules:
       1. 'english': The word in English (Capitalized).
@@ -172,7 +191,16 @@ export const generateLessonContent = async (wordListInput: string): Promise<Voca
 const generateOfflineContent = (words: string[]): VocabularyItem[] => {
   return words.map((word, index) => {
     const lowerWord = word.toLowerCase();
-    const dbEntry = OFFLINE_DICTIONARY[lowerWord];
+    // Try exact match
+    let dbEntry = OFFLINE_DICTIONARY[lowerWord];
+    
+    // Try singular match if plural not found (e.g., user types "dogs", we have "dog")
+    if (!dbEntry && lowerWord.endsWith('s')) {
+        const singular = lowerWord.slice(0, -1);
+        if (OFFLINE_DICTIONARY[singular]) {
+            dbEntry = { ...OFFLINE_DICTIONARY[singular], isPlural: true };
+        }
+    }
 
     if (dbEntry) {
       return {
@@ -185,6 +213,7 @@ const generateOfflineContent = (words: string[]): VocabularyItem[] => {
       };
     } else {
       // Generic fallback for unknown offline words
+      // IMPORTANT: Emoji "⭐" triggers the 'First Letter' fallback in WordVisual
       return {
         id: `unknown-${index}-${Date.now()}`,
         english: word,
@@ -199,13 +228,10 @@ const generateOfflineContent = (words: string[]): VocabularyItem[] => {
 
 /**
  * Generates Audio.
- * Online: High quality Gemini Neural Audio.
- * Offline: Browser Native Speech Synthesis (Robotic but works without internet).
  */
 export const generateWordAudio = async (text: string): Promise<string> => {
-  if (!isOnline()) {
-    // Return empty string to signal "Use Native TTS"
-    return ""; 
+  if (!isOnline() || !apiKey) {
+    return ""; // Use Native TTS
   }
 
   try {
@@ -216,7 +242,7 @@ export const generateWordAudio = async (text: string): Promise<string> => {
         responseModalities: [Modality.AUDIO],
         speechConfig: {
           voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Kore' }, 
+            prebuiltVoiceConfig: { voiceName: 'Kore' }, // Kore is female-sounding
           },
         },
       },
@@ -228,15 +254,14 @@ export const generateWordAudio = async (text: string): Promise<string> => {
     return base64Audio;
 
   } catch (error) {
-    console.warn("Audio Gen Error (Using Native fallback):", error);
-    return ""; // Fail gracefully to native
+    console.warn("Audio Gen Error:", error);
+    return ""; 
   }
 };
 
 /**
  * Plays Audio.
- * If base64 provided -> Plays Gemini Audio.
- * If empty string -> Uses Window.SpeechSynthesis (Native Offline).
+ * Prioritizes FEMALE voices for Native TTS.
  */
 export const playAudio = async (base64String?: string, fallbackText?: string) => {
   // 1. Try Gemini Audio (Base64)
@@ -257,19 +282,30 @@ export const playAudio = async (base64String?: string, fallbackText?: string) =>
     }
   }
 
-  // 2. Fallback: Native Browser TTS (Works Offline)
+  // 2. Fallback: Native Browser TTS (Strictly FEMALE preference)
   if (fallbackText) {
+    window.speechSynthesis.cancel(); // Stop previous
     const utterance = new SpeechSynthesisUtterance(fallbackText);
     utterance.lang = 'en-US';
-    utterance.rate = 0.9; // Slightly slower for kids
-    utterance.pitch = 1.1; // Slightly higher pitch for kids
+    utterance.rate = 0.85; // Slower for kids
+    utterance.pitch = 1.2; // Higher pitch (friendlier)
     
-    // Try to find a good English voice
     const voices = window.speechSynthesis.getVoices();
-    const enVoice = voices.find(v => v.lang.includes('en-US') || v.lang.includes('en-GB'));
-    if (enVoice) utterance.voice = enVoice;
+    
+    // Prioritize Female Voices (iOS 'Samantha', Google 'Female', etc.)
+    let selectedVoice = voices.find(v => 
+        (v.name.includes('Samantha')) || 
+        (v.name.includes('Female') && v.lang.includes('en-US')) ||
+        (v.name.includes('Google US English')) // Often female
+    );
 
-    window.speechSynthesis.cancel(); // Stop previous
+    // Fallback to any English voice if no specific female voice found
+    if (!selectedVoice) {
+        selectedVoice = voices.find(v => v.lang.includes('en-US') || v.lang.includes('en-GB'));
+    }
+
+    if (selectedVoice) utterance.voice = selectedVoice;
+
     window.speechSynthesis.speak(utterance);
   }
 };

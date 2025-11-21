@@ -31,6 +31,23 @@ export const WordVisual: React.FC<WordVisualProps> = ({
   // SHADOW MODE: If true, make it black/blurry. If false, normal full color.
   const style = shadowMode ? { filter: 'brightness(0) blur(0px)', opacity: 0.8 } : {};
 
+  // FALLBACK FOR UNKNOWN EMOJIS (When AI fails or offline dict misses)
+  // If emoji is exactly the "Star" placeholder, render a Letter Avatar instead.
+  if (item.emoji === "⭐") {
+      const letter = item.english.charAt(0).toUpperCase();
+      // Determine size in pixels for inline style scaling
+      let bubbleSize = 'w-12 h-12 text-2xl';
+      if (size === 'huge') bubbleSize = 'w-40 h-40 text-7xl border-8';
+      if (size === 'lg') bubbleSize = 'w-20 h-20 text-4xl border-4';
+      if (size === 'sm') bubbleSize = 'w-8 h-8 text-sm';
+
+      return (
+        <div className={`rounded-full bg-sky-100 border-sky-300 flex items-center justify-center font-black text-sky-600 shadow-sm ${bubbleSize} ${className}`} style={style}>
+            {letter}
+        </div>
+      );
+  }
+
   if (item.isPlural) {
     // PLURAL RENDERING: Cluster of 3 items
     // We use relative positioning to create a tight "pile" look

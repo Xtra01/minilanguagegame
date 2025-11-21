@@ -12,7 +12,7 @@ import { FeedMonster } from './components/games/FeedMonster';
 import { Maximize2, Minimize2, Download, X, Lock } from 'lucide-react';
 import { Button } from './components/Button';
 
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 
 export default function App() {
   const [mode, setMode] = useState<GameMode>('DASHBOARD');
@@ -23,6 +23,9 @@ export default function App() {
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState(false);
+
+  // Helper to determine if we are in a "Game" mode (fixed viewport) or "UI" mode (scrollable)
+  const isGameMode = mode !== 'DASHBOARD' && mode !== 'MENU';
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -101,14 +104,15 @@ This text file confirms your password '9090' was correct.
 
   return (
     // FIX: Use h-[100dvh] for mobile browsers and CSS radial gradient for offline reliability
-    <div className="h-[100dvh] w-screen flex flex-col bg-sky-50 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] overflow-hidden">
+    // FIX: overflow-hidden on root ensures no double scrollbars, we scroll inside <main>
+    <div className="h-[100dvh] w-full flex flex-col bg-sky-50 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] overflow-hidden fixed inset-0">
       
       {/* Header / App Bar */}
-      <header className="flex-none p-4 flex items-center justify-between max-w-7xl mx-auto w-full z-10">
-         <div className="bg-white px-6 py-2 rounded-full shadow-md border-b-4 border-slate-200 flex items-center gap-2 select-none">
-            <span className="text-2xl">🦁</span>
-            <span className="font-black text-slate-700 text-xl tracking-wider">MiniLingo</span>
-            <span className="text-xs text-slate-400 font-normal ml-1 bg-slate-100 px-2 py-0.5 rounded-md">v{APP_VERSION}</span>
+      <header className="flex-none p-3 md:p-4 flex items-center justify-between max-w-7xl mx-auto w-full z-10">
+         <div className="bg-white px-4 md:px-6 py-2 rounded-full shadow-md border-b-4 border-slate-200 flex items-center gap-2 select-none">
+            <span className="text-xl md:text-2xl">🦁</span>
+            <span className="font-black text-slate-700 text-lg md:text-xl tracking-wider">MiniLingo</span>
+            <span className="text-xs text-slate-400 font-normal ml-1 bg-slate-100 px-2 py-0.5 rounded-md hidden sm:inline-block">v{APP_VERSION}</span>
          </div>
 
          <div className="flex gap-3">
@@ -130,9 +134,17 @@ This text file confirms your password '9090' was correct.
          </div>
       </header>
 
-      {/* Main Content Area - Scrollable if needed, but locked mostly */}
-      <main className="flex-1 relative overflow-hidden flex flex-col scroll-container z-0">
-        <div className="w-full max-w-6xl mx-auto p-4 md:p-6 flex-1 h-full flex flex-col">
+      {/* Main Content Area */}
+      {/* DYNAMIC SCROLL LOGIC:
+          - If Game Mode: overflow-hidden (game manages its own viewport/canvas)
+          - If UI Mode (Dashboard/Menu): overflow-y-auto (allow vertical scrolling)
+      */}
+      <main 
+        className={`flex-1 relative flex flex-col z-0 ${isGameMode ? 'overflow-hidden' : 'overflow-y-auto scroll-container touch-pan-y'}`}
+      >
+        <div 
+          className={`w-full max-w-6xl mx-auto p-3 md:p-6 flex-1 flex flex-col ${isGameMode ? 'h-full' : 'min-h-full'}`}
+        >
           {mode === 'DASHBOARD' && (
             <div className="flex-1 flex items-center justify-center">
                 <TeacherPanel onLessonCreated={handleLessonCreated} />
@@ -180,7 +192,7 @@ This text file confirms your password '9090' was correct.
       </main>
       
       {/* Footer for Kiosk Status */}
-      <footer className="flex-none py-2 text-center text-slate-400 text-xs select-none opacity-60">
+      <footer className="flex-none py-2 text-center text-slate-400 text-xs select-none opacity-60 bg-sky-50/80 backdrop-blur-sm">
         MiniLingo Education Suite • Interactive Learning System
       </footer>
 
