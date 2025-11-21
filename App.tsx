@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { VocabularyItem, GameMode } from './types';
 import { TeacherPanel } from './components/TeacherPanel';
 import { StudentHub } from './components/StudentHub';
@@ -12,22 +13,33 @@ import { FeedMonster } from './components/games/FeedMonster';
 import { Maximize2, Minimize2, Download, X, Lock } from 'lucide-react';
 import { Button } from './components/Button';
 
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.3.0';
 
 export default function App() {
   const [mode, setMode] = useState<GameMode>('DASHBOARD');
   const [lessonItems, setLessonItems] = useState<VocabularyItem[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [supportsFullscreenAPI, setSupportsFullscreenAPI] = useState(true);
   
   // Download/Admin States
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState(false);
 
+  // Check browser capabilities on mount
+  useEffect(() => {
+    // iOS Safari often doesn't support standard requestFullscreen on elements
+    if (typeof document.documentElement.requestFullscreen !== 'function') {
+        setSupportsFullscreenAPI(false);
+    }
+  }, []);
+
   // Helper to determine if we are in a "Game" mode (fixed viewport) or "UI" mode (scrollable)
   const isGameMode = mode !== 'DASHBOARD' && mode !== 'MENU';
 
   const toggleFullscreen = () => {
+    if (!supportsFullscreenAPI) return;
+
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(err => {
         console.error(`Error attempting to enable fullscreen: ${err.message}`);
@@ -108,11 +120,13 @@ This text file confirms your password '9090' was correct.
     <div className="h-[100dvh] w-full flex flex-col bg-sky-50 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:20px_20px] overflow-hidden fixed inset-0">
       
       {/* Header / App Bar */}
-      <header className="flex-none p-3 md:p-4 flex items-center justify-between max-w-7xl mx-auto w-full z-10">
+      <header className="flex-none p-3 md:p-4 flex items-center justify-between max-w-7xl mx-auto w-full z-10 relative">
          <div className="bg-white px-4 md:px-6 py-2 rounded-full shadow-md border-b-4 border-slate-200 flex items-center gap-2 select-none">
             <span className="text-xl md:text-2xl">🦁</span>
-            <span className="font-black text-slate-700 text-lg md:text-xl tracking-wider">MiniLingo</span>
-            <span className="text-xs text-slate-400 font-normal ml-1 bg-slate-100 px-2 py-0.5 rounded-md hidden sm:inline-block">v{APP_VERSION}</span>
+            <div className="flex flex-col justify-center">
+                <span className="font-black text-slate-700 text-lg md:text-xl tracking-wider leading-none">MiniLingo</span>
+                <span className="text-[10px] font-bold text-slate-400 leading-none mt-0.5">v{APP_VERSION}</span>
+            </div>
          </div>
 
          <div className="flex gap-3">
@@ -124,13 +138,16 @@ This text file confirms your password '9090' was correct.
                 <Download size={18} /> <span className="hidden sm:inline">Download EXE</span>
              </button>
 
-             <button 
-                onClick={toggleFullscreen}
-                className="bg-white p-3 rounded-full shadow-sm text-slate-500 hover:text-sky-500 hover:bg-sky-50 transition-all"
-                title="Toggle Fullscreen"
-             >
-                {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-             </button>
+             {/* Only show Fullscreen button if supported (Hides on iOS Safari to prevent confusion) */}
+             {supportsFullscreenAPI && (
+                 <button 
+                    onClick={toggleFullscreen}
+                    className="bg-white p-3 rounded-full shadow-sm text-slate-500 hover:text-sky-500 hover:bg-sky-50 transition-all"
+                    title="Toggle Fullscreen"
+                 >
+                    {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                 </button>
+             )}
          </div>
       </header>
 

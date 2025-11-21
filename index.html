@@ -3,10 +3,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>MiniLingo: Learn English</title>
+    
+    <!-- PWA / MOBILE KIOSK SETTINGS -->
     <meta name="application-name" content="MiniLingo" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MiniLingo" />
+    <meta name="theme-color" content="#f0f9ff" />
     <meta name="msapplication-TileColor" content="#f0f9ff" />
+
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <!-- RESTORED: Tailwind CDN for instant styling -->
@@ -27,19 +34,24 @@
     </script>
 
     <style>
+      html, body {
+        height: 100%;
+        overflow: hidden; /* Prevent bounce effect on body */
+      }
+      
       body {
         font-family: 'Fredoka', sans-serif;
         background-color: #f0f9ff;
         
         /* SMART BOARD / KIOSK / IOS OPTIMIZATIONS */
-        /* 'manipulation' allows scrolling but disables double-tap to zoom */
         touch-action: manipulation; 
         user-select: none;
         -webkit-user-select: none;
         overscroll-behavior: none;
         cursor: default; 
-        overflow: hidden; /* Keeps the main app body locked */
         -webkit-tap-highlight-color: transparent; /* Removes gray box on tap in iOS */
+        padding-top: env(safe-area-inset-top); /* Notch support */
+        padding-bottom: env(safe-area-inset-bottom);
       }
       
       .scroll-container {
